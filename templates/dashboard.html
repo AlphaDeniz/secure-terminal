@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>The Machine – Dashboard</title>
+    <style>
+        body {
+            background-color: #0d0d0d;
+            color: #33ff33;
+            font-family: Consolas, monospace;
+            text-align: center;
+            padding: 50px;
+        }
+        table {
+            margin: 0 auto;
+            border-collapse: collapse;
+            width: 80%;
+        }
+        th, td {
+            border: 1px solid #33ff33;
+            padding: 10px;
+        }
+        th {
+            background-color: #1a1a1a;
+        }
+        a {
+            color: #33ff33;
+        }
+    </style>
+</head>
+<body>
+    <h1>SECURE TERMINAL – DASHBOARD</h1>
+    <p>All known subjects</p>
+    <table>
+        <tr>
+            <th>SSN</th>
+            <th>Classification</th>
+            <th>First Seen</th>
+        </tr>
+        {% for ssn, data in memory.items() %}
+        <tr>
+            <td>{{ ssn }}</td>
+            <td><strong>{{ data.label.upper() }}</strong></td>
+            <td>{{ data.timestamp }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <br>
+    <a href="/">⬅ Return to main interface</a>
+</body>
+</html>
