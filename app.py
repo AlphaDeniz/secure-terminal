@@ -1,102 +1,113 @@
-from flask import Flask, render_template, request
-import json
-import os
-import random
+from flask import Flask, render_template, request, redirect, url_for, session
+from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
-import re
+import os, json, random
 
 app = Flask(__name__)
+app.secret_key = os.urandom(24)
 
-DATA_FILE = "machine_memory.json"
-SECRET_KEY = b"MySecretKey123"  # Change this to your secret key!
-LABELS = ["threat", "irrelevant", "under surveillance", "asset", "missing", "target neutralized"]
-SSN_PATTERN = re.compile(r"^\d{3}-\d{2}-\d{4}$")
+# ========== CONFIG ==========
+PASSWORD = "admin123"  # Change this as needed
+PASSWORD_HASH = generate_password_hash(PASSWORD)
 
+MEMORY_FILE = "machine_memory.json"
 
-def xor_encrypt_decrypt(data: bytes, key: bytes) -> bytes:
-    return bytes([b ^ key[i % len(key)] for i, b in enumerate(data)])
-
-
-def save_memory(memory):
-    data = json.dumps(memory, indent=2).encode()
-    encrypted = xor_encrypt_decrypt(data, SECRET_KEY)
-    with open(DATA_FILE, "wb") as f:
-        f.write(encrypted)
-
+CLASSIFICATIONS = ["MONITORED", "IRRELEVANT THREAT", "RELEVANT THREAT"]
+CITIES = ["New York", "Los Angeles", "Chicago", "London"]
+ASSOCIATES = ["Unknown", "Flagged", "Former Asset", "Civilian"]
 
 def load_memory():
-    if os.path.exists(DATA_FILE):
-        if os.path.getsize(DATA_FILE) == 0:
-            return {}
-        with open(DATA_FILE, "rb") as f:
-            encrypted = f.read()
-        decrypted = xor_encrypt_decrypt(encrypted, SECRET_KEY)
-        try:
-            return json.loads(decrypted.decode())
-        except Exception as e:
-            print("Failed to load or parse data:", e)
-            return {}
-    else:
+    if not os.path.exists(MEMORY_FILE):
+        return {}
+    try:
+        with open(MEMORY_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    except Exception as e:
+        print("Error loading memory:", e)
         return {}
 
+def save_memory(data):
+    with open(MEMORY_FILE, 'w', encoding='utf-8') as f:
+        json.dump(data, f, indent=2)
 
-memory = load_memory()
+def generate_profile():
+    return {
+        "name": f"Subject {random.randint(1000,9999)}",
+        "age": random.randint(20, 70),
+        "city": random.choice(CITIES),
+        "last_seen": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "associate": random.choice(ASSOCIATES)
+    }
 
+def generate_classification(profile):
+    score = 0
+    if profile['age'] < 30:
+        score += 2
+    if profile['city'] == "Chicago":
+        score += 2
+    if profile['associate'] == "Flagged":
+        score += 4
+    elif profile['associate'] == "Former Asset":
+        score += 3
 
-def is_valid_ssn(ssn):
-    if not SSN_PATTERN.match(ssn):
-        return False
-
-    area, group, serial = ssn.split('-')
-
-    # Invalid area numbers
-    if area == "000" or area == "666" or (900 <= int(area) <= 999):
-        return False
-    # Invalid group number
-    if group == "00":
-        return False
-    # Invalid serial number
-    if serial == "0000":
-        return False
-    # Reject all zeros SSN
-    if ssn == "000-00-0000":
-        return False
-
-    return True
-
-
-def classify_ssn(ssn):
-    if ssn in memory:
-        return memory[ssn]
+    if score >= 6:
+        return "RELEVANT THREAT"
+    elif 3 <= score < 6:
+        return "IRRELEVANT THREAT"
     else:
-        label = random.choice(LABELS)
-        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        memory[ssn] = {"label": label, "timestamp": timestamp}
-        save_memory(memory)
-        return memory[ssn]
+        return "MONITORED"
 
-
-@app.route("/", methods=["GET", "POST"])
+@app.route('/')
 def index():
-    result = None
-    error = None
+    return redirect(url_for('boot'))
 
-    if request.method == "POST":
-        ssn = request.form.get("ssn", "").strip()
-        if is_valid_ssn(ssn):
-            result = classify_ssn(ssn)
-            result["ssn"] = ssn
-        else:
-            error = "Invalid SSN format or invalid number. Use format XXX-XX-XXXX with valid values."
+@app.route('/boot')
+def boot():
+    return render_template("boot.html")
 
-    return render_template("index.html", result=result, error=error)
-
-
-@app.route("/dashboard")
+@app.route('/dashboard', methods=['GET', 'POST'])
 def dashboard():
+    memory = load_memory()
+    if request.method == 'POST':
+        ssn = request.form['ssn'].strip()
+        if ssn and ssn not in memory:
+            profile = generate_profile()
+            classification = generate_classification(profile)
+            memory[ssn] = {
+                "classification": classification,
+                "profile": profile,
+                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            }
+            save_memory(memory)
+        return redirect(url_for('dashboard'))
     return render_template("dashboard.html", memory=memory)
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        if check_password_hash(PASSWORD_HASH, request.form['password']):
+            session['logged_in'] = True
+            return redirect(url_for('admin'))
+    return render_template("login.html")
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=3000)
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
 
+@app.route('/admin', methods=['GET', 'POST'])
+def admin():
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+    memory = load_memory()
+    if request.method == 'POST':
+        ssn = request.form['ssn']
+        classification = request.form['classification']
+        if ssn in memory:
+            memory[ssn]['classification'] = classification
+            save_memory(memory)
+        return redirect(url_for('admin'))
+    return render_template("admin.html", memory=memory, classifications=CLASSIFICATIONS)
+
+if __name__ == '__main__':
+    app.run(debug=True)

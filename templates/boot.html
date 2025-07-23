@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8" />
+  <title>Secure Terminal - Booting</title>
+  <meta http-equiv="refresh" content="3;url=/dashboard" />
+  <style>
+    body {
+      background-color: #121212;
+      color: #76ff03;
+      font-family: 'Courier New', Courier, monospace;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      padding: 0 20px;
+      overflow: hidden;
+    }
+    .line {
+      opacity: 0;
+      animation: fadeIn 1s forwards;
+      animation-delay: var(--delay);
+      white-space: nowrap;
+      font-weight: 600;
+      font-size: 1.2rem;
+      margin-bottom: 12px;
+      text-shadow: 0 0 5px #76ff03;
+    }
+    .cursor {
+      display: inline-block;
+      width: 10px;
+      background-color: #76ff03;
+      margin-left: 5px;
+      animation: blink 1s infinite;
+    }
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+      }
+    }
+    @keyframes blink {
+      0%, 50% {
+        background-color: #76ff03;
+      }
+      51%, 100% {
+        background-color: transparent;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="line" style="--delay: 0s;">[BOOT] Initializing Machine Core<span class="cursor"></span></div>
+  <div class="line" style="--delay: 1s;">[OK] Accessing encrypted memory<span class="cursor"></span></div>
+  <div class="line" style="--delay: 2s;">[OK] Subsystem online<span class="cursor"></span></div>
+  <div class="line" style="--delay: 3s;">✓ Secure Terminal ready<span class="cursor"></span></div>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <meta charset="UTF-8" />
+  <title>Secure Terminal - Admin Panel</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      color: #76ff03;
+    }
+    a.logout {
+      display: inline-block;
+      color: #f44336;
+      font-weight: 700;
+      margin-bottom: 20px;
+      text-decoration: none;
+      transition: color 0.3s ease;
+    }
+    a.logout:hover {
+      color: #d32f2f;
+    }
+    form.edit-form {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+    input[type="text"], select {
+      padding: 10px;
+      border: 2px solid #76ff03;
+      border-radius: 6px;
+      background: #222;
+      color: #e0e0e0;
+      font-size: 1rem;
+      font-family: monospace;
+      min-width: 180px;
+    }
+    button {
+      padding: 10px 25px;
+      background-color: #76ff03;
+      border: none;
+      border-radius: 6px;
+      color: #121212;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #64dd17;
+    }
+    .entry {
+      background: #1e1e1e;
+      padding: 15px 20px;
+      margin-bottom: 15px;
+      border-radius: 6px;
+      box-shadow: 0 0 10px rgba(118, 255, 3, 0.15);
+    }
+    .entry strong {
+      color: #76ff03;
+    }
+  </style>
+</head>
+<body>
+  <h1>Secure Terminal Admin Panel</h1>
+  <a href="/logout" class="logout">[Logout]</a>
+
+  <form class="edit-form" method="POST">
+    <input type="text" name="ssn" placeholder="SSN to edit" required />
+    <select name="classification">
+      {% for option in classifications %}
+      <option value="{{ option }}">{{ option }}</option>
+      {% endfor %}
+    </select>
+    <button type="submit">Update Classification</button>
+  </form>
+
+  {% for ssn, data in memory.items() %}
+  <div class="entry">
+    <p><strong>SSN:</strong> {{ ssn }}</p>
+    <p><strong>Classification:</strong> {{ data.classification }}</p>
+    <p><strong>Profile:</strong> {{ data.profile.name }} from {{ data.profile.city }}</p>
+  </div>
+  {% endfor %}
+</body>
+</html>

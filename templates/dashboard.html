@@ -1,50 +1,118 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>The Machine – Dashboard</title>
-    <style>
-        body {
-            background-color: #0d0d0d;
-            color: #33ff33;
-            font-family: Consolas, monospace;
-            text-align: center;
-            padding: 50px;
-        }
-        table {
-            margin: 0 auto;
-            border-collapse: collapse;
-            width: 80%;
-        }
-        th, td {
-            border: 1px solid #33ff33;
-            padding: 10px;
-        }
-        th {
-            background-color: #1a1a1a;
-        }
-        a {
-            color: #33ff33;
-        }
-    </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Secure Terminal - Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      color: #e0e0e0;
+      margin: 0;
+      padding: 20px;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    form {
+      margin-bottom: 30px;
+    }
+    input[type="text"] {
+      padding: 8px;
+      font-size: 16px;
+      width: 250px;
+      border: none;
+      border-radius: 4px;
+      margin-right: 10px;
+    }
+    input[type="submit"] {
+      padding: 8px 16px;
+      font-size: 16px;
+      background-color: #2196f3;
+      border: none;
+      border-radius: 4px;
+      color: white;
+      cursor: pointer;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #1e1e1e;
+    }
+    th, td {
+      padding: 12px 15px;
+      border-bottom: 1px solid #333;
+      text-align: left;
+    }
+    th {
+      background-color: #333;
+    }
+    tr:hover {
+      background-color: #2a2a2a;
+    }
+    .classification {
+      font-weight: bold;
+      padding: 4px 8px;
+      border-radius: 4px;
+      display: inline-block;
+      color: white;
+    }
+    .MONITORED {
+      background-color: #757575; /* gray */
+    }
+    .IRRELEVANT\ THREAT {
+      background-color: #ffa726; /* orange */
+    }
+    .RELEVANT\ THREAT {
+      background-color: #d32f2f; /* red */
+    }
+  </style>
 </head>
 <body>
-    <h1>SECURE TERMINAL – DASHBOARD</h1>
-    <p>All known subjects</p>
-    <table>
-        <tr>
-            <th>SSN</th>
-            <th>Classification</th>
-            <th>First Seen</th>
-        </tr>
-        {% for ssn, data in memory.items() %}
-        <tr>
-            <td>{{ ssn }}</td>
-            <td><strong>{{ data.label.upper() }}</strong></td>
-            <td>{{ data.timestamp }}</td>
-        </tr>
-        {% endfor %}
-    </table>
-    <br>
-    <a href="/">⬅ Return to main interface</a>
+  <h1>Secure Terminal - Dashboard</h1>
+  <form method="POST" action="{{ url_for('dashboard') }}">
+    <input type="text" name="ssn" placeholder="Enter SSN" required />
+    <input type="submit" value="Scan" />
+  </form>
+
+  {% if memory %}
+  <table>
+    <thead>
+      <tr>
+        <th>SSN</th>
+        <th>Classification</th>
+        <th>Name</th>
+        <th>Age</th>
+        <th>City</th>
+        <th>Associate</th>
+        <th>Last Seen</th>
+        <th>Timestamp</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for ssn, data in memory.items() %}
+      <tr>
+        <td>{{ ssn }}</td>
+        <td>
+          <span class="classification {{ data.classification | replace(' ', '\\ ') }}">
+            {{ data.classification }}
+          </span>
+        </td>
+        <td>{{ data.profile.name }}</td>
+        <td>{{ data.profile.age }}</td>
+        <td>{{ data.profile.city }}</td>
+        <td>{{ data.profile.associate }}</td>
+        <td>{{ data.profile.last_seen }}</td>
+        <td>{{ data.timestamp }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+    <p>No records scanned yet.</p>
+  {% endif %}
 </body>
 </html>

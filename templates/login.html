@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Secure Terminal - Login</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #121212;
+      color: #e0e0e0;
+      font-family: Arial, sans-serif;
+    }
+
+    .login-container {
+      background-color: #1e1e1e;
+      padding: 40px 30px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #000000aa;
+      width: 320px;
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 30px;
+    }
+
+    input[type="password"] {
+      width: 100%;
+      padding: 12px 15px;
+      margin-bottom: 20px;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      box-sizing: border-box;
+      background-color: #2a2a2a;
+      color: #e0e0e0;
+    }
+
+    input[type="password"]::placeholder {
+      color: #888;
+    }
+
+    input[type="submit"] {
+      width: 100%;
+      padding: 12px 15px;
+      background-color: #2196f3;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #1976d2;
+    }
+
+    .error-message {
+      color: #f44336;
+      margin-bottom: 15px;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h1>Secure Terminal Login</h1>
+    {% if error %}
+      <div class="error-message">Incorrect password. Please try again.</div>
+    {% endif %}
+    <form method="POST">
+      <input type="password" name="password" placeholder="Enter password" required autofocus />
+      <input type="submit" value="Login" />
+    </form>
+  </div>
+</body>
+</html>
